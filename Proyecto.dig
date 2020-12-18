@@ -1,0 +1,8383 @@
+<?xml version="1.0" encoding="utf-8"?>
+<circuit>
+  <version>1</version>
+  <attributes/>
+  <visualElements>
+    <visualElement>
+      <elementName>Clock</elementName>
+      <elementAttributes>
+        <entry>
+          <string>runRealTime</string>
+          <boolean>true</boolean>
+        </entry>
+        <entry>
+          <string>Frequency</string>
+          <int>100</int>
+        </entry>
+      </elementAttributes>
+      <pos x="1140" y="560"/>
+    </visualElement>
+    <visualElement>
+      <elementName>External</elementName>
+      <elementAttributes>
+        <entry>
+          <string>applicationType</string>
+          <appType>IVERILOG</appType>
+        </entry>
+        <entry>
+          <string>Label</string>
+          <string>Reloj</string>
+        </entry>
+        <entry>
+          <string>externalInputs</string>
+          <string>CLK,TMINUTOS:6,THORAS:6,IMINUTOS:6,IHORAS:6,RESET,SET_HORA</string>
+        </entry>
+        <entry>
+          <string>Code</string>
+          <string>module Reloj(
+    input CLK,
+    input [5:0]TMINUTOS,
+    input [5:0]THORAS,
+    input [5:0]IMINUTOS,
+    input [5:0]IHORAS,
+    input RESET,
+    input SET_HORA,
+    output reg [6:0] MILSEGUNDOS,
+    output reg [5:0] SEGUNDOS,
+    output reg [5:0] MINUTOS,
+    output reg [5:0] HORAS,
+    output reg ALARM
+);
+
+initial begin 
+    MILSEGUNDOS=0;
+    SEGUNDOS=0;
+    MINUTOS=0;
+    HORAS=0;
+    ALARM=0;
+end
+
+ always @(posedge CLK)
+    begin
+        if(RESET)
+        begin
+            MILSEGUNDOS=0;
+            SEGUNDOS=0;
+            MINUTOS=0;
+            HORAS=0;
+            ALARM=0;
+        end
+        else if(SET_HORA)
+        begin
+            MINUTOS=IMINUTOS;
+            HORAS=IHORAS;
+            ALARM=0;
+        end
+    end
+
+always @ (negedge CLK )
+begin
+    if(THORAS==HORAS)
+    begin
+        if(TMINUTOS==MINUTOS)
+        begin
+            ALARM&lt;=1;
+        end
+        else if(TMINUTOS&lt;MINUTOS)
+        begin
+            ALARM&lt;=0;
+        end
+    end
+    else if(THORAS&lt;HORAS)
+    begin
+        ALARM&lt;=0;
+    end
+    if(MILSEGUNDOS==99)
+    begin
+        MILSEGUNDOS=0;
+        if (SEGUNDOS==59) 
+        begin
+            SEGUNDOS=0;
+            if (MINUTOS==59) 
+            begin
+               MINUTOS=0;
+               if (HORAS==23) 
+               begin
+                   HORAS=0;
+               end 
+               else
+                begin
+                    HORAS&lt;=HORAS+1;
+                end
+            end
+            else
+            begin
+                MINUTOS&lt;=MINUTOS+1;
+            end
+        end
+        else
+        begin
+            SEGUNDOS&lt;=SEGUNDOS+1;
+        end
+    end
+    else 
+    begin
+        MILSEGUNDOS&lt;=MILSEGUNDOS+1;
+    end
+end
+endmodule</string>
+        </entry>
+        <entry>
+          <string>externalOutputs</string>
+          <string>MILSEGUNDOS:7,SEGUNDOS:6,MINUTOS:6,HORAS:6,ALARM</string>
+        </entry>
+        <entry>
+          <string>Width</string>
+          <int>12</int>
+        </entry>
+      </elementAttributes>
+      <pos x="-100" y="0"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Out</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Bits</string>
+          <int>6</int>
+        </entry>
+        <entry>
+          <string>intFormat</string>
+          <intFormat>dec</intFormat>
+        </entry>
+      </elementAttributes>
+      <pos x="1040" y="680"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Out</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Bits</string>
+          <int>6</int>
+        </entry>
+        <entry>
+          <string>intFormat</string>
+          <intFormat>dec</intFormat>
+        </entry>
+      </elementAttributes>
+      <pos x="1040" y="740"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Out</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Bits</string>
+          <int>6</int>
+        </entry>
+        <entry>
+          <string>intFormat</string>
+          <intFormat>dec</intFormat>
+        </entry>
+      </elementAttributes>
+      <pos x="1040" y="800"/>
+    </visualElement>
+    <visualElement>
+      <elementName>LED</elementName>
+      <elementAttributes/>
+      <pos x="1040" y="860"/>
+    </visualElement>
+    <visualElement>
+      <elementName>External</elementName>
+      <elementAttributes>
+        <entry>
+          <string>applicationType</string>
+          <appType>IVERILOG</appType>
+        </entry>
+        <entry>
+          <string>Label</string>
+          <string>Controlador_HORA</string>
+        </entry>
+        <entry>
+          <string>externalInputs</string>
+          <string>HORA:6,CLK,AHORA:6,ALARM</string>
+        </entry>
+        <entry>
+          <string>Code</string>
+          <string>module Controlador_HORA(
+    input [5:0] HORA,
+    input CLK,
+    input [5:0] AHORA,
+    input ALARM,
+    //Digito Izquierda
+    output reg A1,
+    output reg B1,
+    output reg C1,
+    output reg D1,
+    output reg E1,
+    output reg F1,
+    output reg G1,
+    output reg DP1,
+    //Digito Derecho
+    output reg A2,
+    output reg B2,
+    output reg C2,
+    output reg D2,
+    output reg E2,
+    output reg F2,
+    output reg G2,
+    output reg DP2
+);
+initial begin
+    //Izquierda
+    A1=0;
+    B1=0;
+    C1=0;
+    D1=0;
+    E1=0;
+    F1=0;
+    G1=0;
+    DP1=0;
+    //Derecha
+    A2=0;
+    B2=0;
+    C2=0;
+    D2=0;
+    E2=0;
+    F2=0;
+    G2=0;
+    DP2=1;
+end
+
+    reg[5:0] numero;
+
+always @(posedge CLK)
+begin
+    if(ALARM)
+    begin
+        numero&lt;=AHORA;
+    end
+    else
+    begin
+        numero&lt;=HORA;
+    end
+ case(numero)
+ 0:
+ begin
+    //Izquierda
+    A1&lt;=1;
+    B1&lt;=1;
+    C1&lt;=1;
+    D1&lt;=1;
+    E1&lt;=1;
+    F1&lt;=1;
+    G1&lt;=0;
+    //Derecha
+    A2&lt;=1;
+    B2&lt;=1;
+    C2&lt;=1;
+    D2&lt;=1;
+    E2&lt;=1;
+    F2&lt;=1;
+    G2&lt;=0;
+ end
+ 1:
+ begin
+    //Izquierda
+    A1&lt;=1;
+    B1&lt;=1;
+    C1&lt;=1;
+    D1&lt;=1;
+    E1&lt;=1;
+    F1&lt;=1;
+    G1&lt;=0;
+    //Derecha
+    A2&lt;=0;
+    B2&lt;=1;
+    C2&lt;=1;
+    D2&lt;=0;
+    E2&lt;=0;
+    F2&lt;=0;
+    G2&lt;=0;
+ end
+ 2:
+ begin
+    //Izquierda
+    A1&lt;=1;
+    B1&lt;=1;
+    C1&lt;=1;
+    D1&lt;=1;
+    E1&lt;=1;
+    F1&lt;=1;
+    G1&lt;=0;
+    //Derecha
+    A2&lt;=1;
+    B2&lt;=1;
+    C2&lt;=0;
+    D2&lt;=1;
+    E2&lt;=1;
+    F2&lt;=0;
+    G2&lt;=1;
+ end
+ 3:
+ begin
+    //Izquierda
+    A1&lt;=1;
+    B1&lt;=1;
+    C1&lt;=1;
+    D1&lt;=1;
+    E1&lt;=1;
+    F1&lt;=1;
+    G1&lt;=0;
+    //Derecha
+    A2&lt;=1;
+    B2&lt;=1;
+    C2&lt;=1;
+    D2&lt;=1;
+    E2&lt;=0;
+    F2&lt;=0;
+    G2&lt;=1;
+ end
+ 4:
+ begin
+    //Izquierda
+    A1&lt;=1;
+    B1&lt;=1;
+    C1&lt;=1;
+    D1&lt;=1;
+    E1&lt;=1;
+    F1&lt;=1;
+    G1&lt;=0;
+    //Derecha
+    A2&lt;=0;
+    B2&lt;=1;
+    C2&lt;=1;
+    D2&lt;=0;
+    E2&lt;=0;
+    F2&lt;=1;
+    G2&lt;=1;
+ end
+ 5:
+ begin
+    //Izquierda
+    A1&lt;=1;
+    B1&lt;=1;
+    C1&lt;=1;
+    D1&lt;=1;
+    E1&lt;=1;
+    F1&lt;=1;
+    G1&lt;=0;
+    //Derecha
+    A2&lt;=1;
+    B2&lt;=0;
+    C2&lt;=1;
+    D2&lt;=1;
+    E2&lt;=0;
+    F2&lt;=1;
+    G2&lt;=1;
+ end
+ 6:
+ begin
+    //Izquierda
+    A1&lt;=1;
+    B1&lt;=1;
+    C1&lt;=1;
+    D1&lt;=1;
+    E1&lt;=1;
+    F1&lt;=1;
+    G1&lt;=0;
+    //Derecha
+    A2&lt;=1;
+    B2&lt;=0;
+    C2&lt;=1;
+    D2&lt;=1;
+    E2&lt;=1;
+    F2&lt;=1;
+    G2&lt;=1;
+ end
+ 7:
+ begin
+    //Izquierda
+    A1&lt;=1;
+    B1&lt;=1;
+    C1&lt;=1;
+    D1&lt;=1;
+    E1&lt;=1;
+    F1&lt;=1;
+    G1&lt;=0;
+    //Derecha
+    A2&lt;=1;
+    B2&lt;=1;
+    C2&lt;=1;
+    D2&lt;=0;
+    E2&lt;=0;
+    F2&lt;=0;
+    G2&lt;=0;
+ end
+ 8:
+ begin
+    //Izquierda
+    A1&lt;=1;
+    B1&lt;=1;
+    C1&lt;=1;
+    D1&lt;=1;
+    E1&lt;=1;
+    F1&lt;=1;
+    G1&lt;=0;
+    //Derecha
+    A2&lt;=1;
+    B2&lt;=1;
+    C2&lt;=1;
+    D2&lt;=1;
+    E2&lt;=1;
+    F2&lt;=1;
+    G2&lt;=1;
+ end
+ 9:
+ begin
+    //Izquierda
+    A1&lt;=1;
+    B1&lt;=1;
+    C1&lt;=1;
+    D1&lt;=1;
+    E1&lt;=1;
+    F1&lt;=1;
+    G1&lt;=0;
+    //Derecha
+    A2&lt;=1;
+    B2&lt;=1;
+    C2&lt;=1;
+    D2&lt;=1;
+    E2&lt;=0;
+    F2&lt;=1;
+    G2&lt;=1;
+ end
+ 10:
+ begin
+    //Izquierda
+    A1&lt;=0;
+    B1&lt;=1;
+    C1&lt;=1;
+    D1&lt;=0;
+    E1&lt;=0;
+    F1&lt;=0;
+    G1&lt;=0;
+    //Derecha
+    A2&lt;=1;
+    B2&lt;=1;
+    C2&lt;=1;
+    D2&lt;=1;
+    E2&lt;=1;
+    F2&lt;=1;
+    G2&lt;=0;
+ end
+ 11:
+ begin
+    //Izquierda
+    A1&lt;=0;
+    B1&lt;=1;
+    C1&lt;=1;
+    D1&lt;=0;
+    E1&lt;=0;
+    F1&lt;=0;
+    G1&lt;=0;
+    //Derecha
+    A2&lt;=0;
+    B2&lt;=1;
+    C2&lt;=1;
+    D2&lt;=0;
+    E2&lt;=0;
+    F2&lt;=0;
+    G2&lt;=0;
+ end
+ 12:
+ begin
+    //Izquierda
+    A1&lt;=0;
+    B1&lt;=1;
+    C1&lt;=1;
+    D1&lt;=0;
+    E1&lt;=0;
+    F1&lt;=0;
+    G1&lt;=0;
+    //Derecha
+    A2&lt;=1;
+    B2&lt;=1;
+    C2&lt;=0;
+    D2&lt;=1;
+    E2&lt;=1;
+    F2&lt;=0;
+    G2&lt;=1;
+ end
+ 13:
+ begin
+    //Izquierda
+    A1&lt;=0;
+    B1&lt;=1;
+    C1&lt;=1;
+    D1&lt;=0;
+    E1&lt;=0;
+    F1&lt;=0;
+    G1&lt;=0;
+    //Derecha
+    A2&lt;=1;
+    B2&lt;=1;
+    C2&lt;=1;
+    D2&lt;=1;
+    E2&lt;=0;
+    F2&lt;=0;
+    G2&lt;=1;
+ end
+ 14:
+ begin
+    //Izquierda
+    A1&lt;=0;
+    B1&lt;=1;
+    C1&lt;=1;
+    D1&lt;=0;
+    E1&lt;=0;
+    F1&lt;=0;
+    G1&lt;=0;
+    //Derecha
+    A2&lt;=0;
+    B2&lt;=1;
+    C2&lt;=1;
+    D2&lt;=0;
+    E2&lt;=0;
+    F2&lt;=1;
+    G2&lt;=1;
+ end
+ 15:
+ begin
+    //Izquierda
+    A1&lt;=0;
+    B1&lt;=1;
+    C1&lt;=1;
+    D1&lt;=0;
+    E1&lt;=0;
+    F1&lt;=0;
+    G1&lt;=0;
+    //Derecha
+    A2&lt;=1;
+    B2&lt;=0;
+    C2&lt;=1;
+    D2&lt;=1;
+    E2&lt;=0;
+    F2&lt;=1;
+    G2&lt;=1;
+ end
+ 16:
+ begin
+    //Izquierda
+    A1&lt;=0;
+    B1&lt;=1;
+    C1&lt;=1;
+    D1&lt;=0;
+    E1&lt;=0;
+    F1&lt;=0;
+    G1&lt;=0;
+    //Derecha
+    A2&lt;=1;
+    B2&lt;=0;
+    C2&lt;=1;
+    D2&lt;=1;
+    E2&lt;=1;
+    F2&lt;=1;
+    G2&lt;=1;
+ end
+ 17:
+ begin
+    //Izquierda
+    A1&lt;=0;
+    B1&lt;=1;
+    C1&lt;=1;
+    D1&lt;=0;
+    E1&lt;=0;
+    F1&lt;=0;
+    G1&lt;=0;
+    //Derecha
+    A2&lt;=1;
+    B2&lt;=1;
+    C2&lt;=1;
+    D2&lt;=0;
+    E2&lt;=0;
+    F2&lt;=0;
+    G2&lt;=0;
+ end
+ 18:
+ begin
+    //Izquierda
+    A1&lt;=0;
+    B1&lt;=1;
+    C1&lt;=1;
+    D1&lt;=0;
+    E1&lt;=0;
+    F1&lt;=0;
+    G1&lt;=0;
+    //Derecha
+    A2&lt;=1;
+    B2&lt;=1;
+    C2&lt;=1;
+    D2&lt;=1;
+    E2&lt;=1;
+    F2&lt;=1;
+    G2&lt;=1;
+ end
+ 19:
+ begin
+    //Izquierda
+    A1&lt;=0;
+    B1&lt;=1;
+    C1&lt;=1;
+    D1&lt;=0;
+    E1&lt;=0;
+    F1&lt;=0;
+    G1&lt;=0;
+    //Derecha
+    A2&lt;=1;
+    B2&lt;=1;
+    C2&lt;=1;
+    D2&lt;=1;
+    E2&lt;=0;
+    F2&lt;=1;
+    G2&lt;=1;
+ end
+ 20:
+ begin
+    //Izquierda
+    A1&lt;=1;
+    B1&lt;=1;
+    C1&lt;=0;
+    D1&lt;=1;
+    E1&lt;=1;
+    F1&lt;=0;
+    G1&lt;=1;
+    //Derecha
+    A2&lt;=1;
+    B2&lt;=1;
+    C2&lt;=1;
+    D2&lt;=1;
+    E2&lt;=1;
+    F2&lt;=1;
+    G2&lt;=0;
+ end
+ 21:
+ begin
+    //Izquierda
+    A1&lt;=1;
+    B1&lt;=1;
+    C1&lt;=0;
+    D1&lt;=1;
+    E1&lt;=1;
+    F1&lt;=0;
+    G1&lt;=1;
+    //Derecha
+    A2&lt;=0;
+    B2&lt;=1;
+    C2&lt;=1;
+    D2&lt;=0;
+    E2&lt;=0;
+    F2&lt;=0;
+    G2&lt;=0;
+ end
+ 22:
+ begin
+    //Izquierda
+    A1&lt;=1;
+    B1&lt;=1;
+    C1&lt;=0;
+    D1&lt;=1;
+    E1&lt;=1;
+    F1&lt;=0;
+    G1&lt;=1;
+    //Derecha
+    A2&lt;=1;
+    B2&lt;=1;
+    C2&lt;=0;
+    D2&lt;=1;
+    E2&lt;=1;
+    F2&lt;=0;
+    G2&lt;=1;
+ end
+ 23:
+ begin
+    //Izquierda
+    A1&lt;=1;
+    B1&lt;=1;
+    C1&lt;=0;
+    D1&lt;=1;
+    E1&lt;=1;
+    F1&lt;=0;
+    G1&lt;=1;
+    //Derecha
+    A2&lt;=1;
+    B2&lt;=1;
+    C2&lt;=1;
+    D2&lt;=1;
+    E2&lt;=0;
+    F2&lt;=0;
+    G2&lt;=1;
+ end
+ default:
+ begin
+    //Izquierda
+    A1&lt;=1;
+    B1&lt;=1;
+    C1&lt;=1;
+    D1&lt;=1;
+    E1&lt;=1;
+    F1&lt;=1;
+    G1&lt;=0;
+    //Derecha
+    A2&lt;=1;
+    B2&lt;=1;
+    C2&lt;=1;
+    D2&lt;=1;
+    E2&lt;=1;
+    F2&lt;=1;
+    G2&lt;=0;
+ end
+endcase
+end
+endmodule</string>
+        </entry>
+        <entry>
+          <string>externalOutputs</string>
+          <string>A1,B1,C1,D1,E1,F1,G1,DP1,A2,B2,C2,D2,E2,F2,G2,DP2</string>
+        </entry>
+        <entry>
+          <string>Width</string>
+          <int>5</int>
+        </entry>
+      </elementAttributes>
+      <pos x="-40" y="220"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Seven-Seg</elementName>
+      <elementAttributes>
+        <entry>
+          <string>ledPersistence</string>
+          <boolean>true</boolean>
+        </entry>
+      </elementAttributes>
+      <pos x="360" y="200"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Seven-Seg</elementName>
+      <elementAttributes/>
+      <pos x="460" y="200"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>A1</string>
+        </entry>
+      </elementAttributes>
+      <pos x="340" y="180"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>B1</string>
+        </entry>
+      </elementAttributes>
+      <pos x="340" y="160"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>C1</string>
+        </entry>
+      </elementAttributes>
+      <pos x="340" y="140"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>D1</string>
+        </entry>
+      </elementAttributes>
+      <pos x="340" y="120"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>A2</string>
+        </entry>
+      </elementAttributes>
+      <pos x="340" y="100"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>B2</string>
+        </entry>
+      </elementAttributes>
+      <pos x="340" y="80"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>C2</string>
+        </entry>
+      </elementAttributes>
+      <pos x="340" y="60"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>D2</string>
+        </entry>
+      </elementAttributes>
+      <pos x="340" y="40"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>E1</string>
+        </entry>
+      </elementAttributes>
+      <pos x="340" y="360"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation reference="../../../../visualElement[18]/elementAttributes/entry/rotation"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>F1</string>
+        </entry>
+      </elementAttributes>
+      <pos x="340" y="380"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation reference="../../../../visualElement[18]/elementAttributes/entry/rotation"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>G1</string>
+        </entry>
+      </elementAttributes>
+      <pos x="340" y="400"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation reference="../../../../visualElement[18]/elementAttributes/entry/rotation"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>DP1</string>
+        </entry>
+      </elementAttributes>
+      <pos x="340" y="420"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>E2</string>
+        </entry>
+      </elementAttributes>
+      <pos x="340" y="440"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation reference="../../../../visualElement[22]/elementAttributes/entry/rotation"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>F2</string>
+        </entry>
+      </elementAttributes>
+      <pos x="340" y="460"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation reference="../../../../visualElement[22]/elementAttributes/entry/rotation"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>G2</string>
+        </entry>
+      </elementAttributes>
+      <pos x="340" y="480"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation reference="../../../../visualElement[22]/elementAttributes/entry/rotation"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>DP2</string>
+        </entry>
+      </elementAttributes>
+      <pos x="340" y="500"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>CLK</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1180" y="560"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>CLK</string>
+        </entry>
+      </elementAttributes>
+      <pos x="-140" y="0"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>CLK</string>
+        </entry>
+      </elementAttributes>
+      <pos x="-100" y="240"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>TMIN</string>
+        </entry>
+      </elementAttributes>
+      <pos x="-140" y="20"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>THORA</string>
+        </entry>
+      </elementAttributes>
+      <pos x="-140" y="40"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>IMIN</string>
+        </entry>
+      </elementAttributes>
+      <pos x="-140" y="60"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>IHORA</string>
+        </entry>
+      </elementAttributes>
+      <pos x="-140" y="80"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>RST</string>
+        </entry>
+      </elementAttributes>
+      <pos x="-140" y="100"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>SETH</string>
+        </entry>
+      </elementAttributes>
+      <pos x="-140" y="120"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>RST</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1180" y="620"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>SETH</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1180" y="980"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>IMIN</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1180" y="920"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>TMIN</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1180" y="740"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>THORA</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1180" y="680"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>IHORA</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1180" y="860"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>SEG</string>
+        </entry>
+      </elementAttributes>
+      <pos x="960" y="680"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation reference="../../../../visualElement[41]/elementAttributes/entry/rotation"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>MIN</string>
+        </entry>
+      </elementAttributes>
+      <pos x="960" y="740"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation reference="../../../../visualElement[41]/elementAttributes/entry/rotation"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>HORA</string>
+        </entry>
+      </elementAttributes>
+      <pos x="960" y="800"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation reference="../../../../visualElement[41]/elementAttributes/entry/rotation"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>ALARM</string>
+        </entry>
+      </elementAttributes>
+      <pos x="960" y="860"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>HORA</string>
+        </entry>
+      </elementAttributes>
+      <pos x="-100" y="220"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Seven-Seg</elementName>
+      <elementAttributes/>
+      <pos x="600" y="200"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Seven-Seg</elementName>
+      <elementAttributes/>
+      <pos x="700" y="200"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>A3</string>
+        </entry>
+      </elementAttributes>
+      <pos x="580" y="180"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>B3</string>
+        </entry>
+      </elementAttributes>
+      <pos x="580" y="160"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>C3</string>
+        </entry>
+      </elementAttributes>
+      <pos x="580" y="140"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>D3</string>
+        </entry>
+      </elementAttributes>
+      <pos x="580" y="120"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>A4</string>
+        </entry>
+      </elementAttributes>
+      <pos x="580" y="100"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>B4</string>
+        </entry>
+      </elementAttributes>
+      <pos x="580" y="80"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>C4</string>
+        </entry>
+      </elementAttributes>
+      <pos x="580" y="60"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>D4</string>
+        </entry>
+      </elementAttributes>
+      <pos x="580" y="40"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>E3</string>
+        </entry>
+      </elementAttributes>
+      <pos x="580" y="360"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>F3</string>
+        </entry>
+      </elementAttributes>
+      <pos x="580" y="380"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>G3</string>
+        </entry>
+      </elementAttributes>
+      <pos x="580" y="400"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>DP3</string>
+        </entry>
+      </elementAttributes>
+      <pos x="580" y="420"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>E4</string>
+        </entry>
+      </elementAttributes>
+      <pos x="580" y="440"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>F4</string>
+        </entry>
+      </elementAttributes>
+      <pos x="580" y="460"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>G4</string>
+        </entry>
+      </elementAttributes>
+      <pos x="580" y="480"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>DP4</string>
+        </entry>
+      </elementAttributes>
+      <pos x="580" y="500"/>
+    </visualElement>
+    <visualElement>
+      <elementName>External</elementName>
+      <elementAttributes>
+        <entry>
+          <string>applicationType</string>
+          <appType>IVERILOG</appType>
+        </entry>
+        <entry>
+          <string>Label</string>
+          <string>Controlador_MIN</string>
+        </entry>
+        <entry>
+          <string>externalInputs</string>
+          <string>MIN:6,AMIN:6,CLK,ALARM</string>
+        </entry>
+        <entry>
+          <string>Width</string>
+          <int>5</int>
+        </entry>
+        <entry>
+          <string>Code</string>
+          <string>module Controlador_MIN(
+    input [5:0] MIN,
+    input [5:0] AMIN,
+    input CLK,
+    input ALARM,
+    //Digito Izquierda
+    output reg A3,
+    output reg B3,
+    output reg C3,
+    output reg D3,
+    output reg E3,
+    output reg F3,
+    output reg G3,
+    output reg DP3,
+    //Digito Derecho
+    output reg A4,
+    output reg B4,
+    output reg C4,
+    output reg D4,
+    output reg E4,
+    output reg F4,
+    output reg G4,
+    output reg DP4
+);
+initial begin
+    //Izquierda
+    A3=0;
+    B3=0;
+    C3=0;
+    D3=0;
+    E3=0;
+    F3=0;
+    G3=0;
+    DP3=0;
+    //Derecha
+    A4=0;
+    B4=0;
+    C4=0;
+    D4=0;
+    E4=0;
+    F4=0;
+    G4=0;
+    DP4=1;
+end
+
+    reg[5:0] numero;
+
+always @(posedge CLK)
+begin
+    if(ALARM)
+    begin
+        numero&lt;=AMIN;
+    end
+    else
+    begin
+        numero&lt;=MIN;
+    end
+ case(numero)
+ 0:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=1;
+    F3&lt;=1;
+    G3&lt;=0;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=1;
+    G4&lt;=0;
+ end
+ 1:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=1;
+    F3&lt;=1;
+    G3&lt;=0;
+    //Derecha
+    A4&lt;=0;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=0;
+    E4&lt;=0;
+    F4&lt;=0;
+    G4&lt;=0;
+ end
+ 2:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=1;
+    F3&lt;=1;
+    G3&lt;=0;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=0;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=0;
+    G4&lt;=1;
+ end
+ 3:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=1;
+    F3&lt;=1;
+    G3&lt;=0;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=0;
+    F4&lt;=0;
+    G4&lt;=1;
+ end
+ 4:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=1;
+    F3&lt;=1;
+    G3&lt;=0;
+    //Derecha
+    A4&lt;=0;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=0;
+    E4&lt;=0;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 5:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=1;
+    F3&lt;=1;
+    G3&lt;=0;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=0;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=0;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 6:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=1;
+    F3&lt;=1;
+    G3&lt;=0;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=0;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 7:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=1;
+    F3&lt;=1;
+    G3&lt;=0;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=0;
+    E4&lt;=0;
+    F4&lt;=0;
+    G4&lt;=0;
+ end
+ 8:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=1;
+    F3&lt;=1;
+    G3&lt;=0;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 9:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=1;
+    F3&lt;=1;
+    G3&lt;=0;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=0;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 10:
+ begin
+    //Izquierda
+    A3&lt;=0;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=0;
+    E3&lt;=0;
+    F3&lt;=0;
+    G3&lt;=0;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=1;
+    G4&lt;=0;
+ end
+ 11:
+ begin
+    //Izquierda
+    A3&lt;=0;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=0;
+    E3&lt;=0;
+    F3&lt;=0;
+    G3&lt;=0;
+    //Derecha
+    A4&lt;=0;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=0;
+    E4&lt;=0;
+    F4&lt;=0;
+    G4&lt;=0;
+ end
+ 12:
+ begin
+    //Izquierda
+    A3&lt;=0;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=0;
+    E3&lt;=0;
+    F3&lt;=0;
+    G3&lt;=0;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=0;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=0;
+    G4&lt;=1;
+ end
+ 13:
+ begin
+    //Izquierda
+    A3&lt;=0;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=0;
+    E3&lt;=0;
+    F3&lt;=0;
+    G3&lt;=0;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=0;
+    F4&lt;=0;
+    G4&lt;=1;
+ end
+ 14:
+ begin
+    //Izquierda
+    A3&lt;=0;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=0;
+    E3&lt;=0;
+    F3&lt;=0;
+    G3&lt;=0;
+    //Derecha
+    A4&lt;=0;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=0;
+    E4&lt;=0;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 15:
+ begin
+    //Izquierda
+    A3&lt;=0;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=0;
+    E3&lt;=0;
+    F3&lt;=0;
+    G3&lt;=0;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=0;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=0;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 16:
+ begin
+    //Izquierda
+    A3&lt;=0;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=0;
+    E3&lt;=0;
+    F3&lt;=0;
+    G3&lt;=0;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=0;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 17:
+ begin
+    //Izquierda
+    A3&lt;=0;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=0;
+    E3&lt;=0;
+    F3&lt;=0;
+    G3&lt;=0;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=0;
+    E4&lt;=0;
+    F4&lt;=0;
+    G4&lt;=0;
+ end
+ 18:
+ begin
+    //Izquierda
+    A3&lt;=0;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=0;
+    E3&lt;=0;
+    F3&lt;=0;
+    G3&lt;=0;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 19:
+ begin
+    //Izquierda
+    A3&lt;=0;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=0;
+    E3&lt;=0;
+    F3&lt;=0;
+    G3&lt;=0;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=0;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 20:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=0;
+    D3&lt;=1;
+    E3&lt;=1;
+    F3&lt;=0;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=1;
+    G4&lt;=0;
+ end
+ 21:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=0;
+    D3&lt;=1;
+    E3&lt;=1;
+    F3&lt;=0;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=0;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=0;
+    E4&lt;=0;
+    F4&lt;=0;
+    G4&lt;=0;
+ end
+ 22:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=0;
+    D3&lt;=1;
+    E3&lt;=1;
+    F3&lt;=0;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=0;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=0;
+    G4&lt;=1;
+ end
+ 23:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=0;
+    D3&lt;=1;
+    E3&lt;=1;
+    F3&lt;=0;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=0;
+    F4&lt;=0;
+    G4&lt;=1;
+ end
+ 24:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=0;
+    D3&lt;=1;
+    E3&lt;=1;
+    F3&lt;=0;
+    G3&lt;=1;  
+    //Derecha
+    A4&lt;=0;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=0;
+    E4&lt;=0;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 25:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=0;
+    D3&lt;=1;
+    E3&lt;=1;
+    F3&lt;=0;
+    G3&lt;=1;  
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=0;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=0;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 26:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=0;
+    D3&lt;=1;
+    E3&lt;=1;
+    F3&lt;=0;
+    G3&lt;=1;  
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=0;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 27:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=0;
+    D3&lt;=1;
+    E3&lt;=1;
+    F3&lt;=0;
+    G3&lt;=1;  
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=0;
+    E4&lt;=0;
+    F4&lt;=0;
+    G4&lt;=0;   
+ end
+ 28:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=0;
+    D3&lt;=1;
+    E3&lt;=1;
+    F3&lt;=0;
+    G3&lt;=1;  
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 29:
+ begin
+     
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=0;
+    D3&lt;=1;
+    E3&lt;=1;
+    F3&lt;=0;
+    G3&lt;=1; 
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=0;
+    F4&lt;=1;
+    G4&lt;=1; 
+ end
+ 30:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=0;
+    F3&lt;=0;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=1;
+    G4&lt;=0;
+ end
+ 31:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=0;
+    F3&lt;=0;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=0;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=0;
+    E4&lt;=0;
+    F4&lt;=0;
+    G4&lt;=0;
+ end
+ 32:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=0;
+    F3&lt;=0;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=0;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=0;
+    G4&lt;=1;
+ end
+ 33:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=0;
+    F3&lt;=0;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=0;
+    F4&lt;=0;
+    G4&lt;=1;   
+ end
+ 34:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=0;
+    F3&lt;=0;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=0;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=0;
+    E4&lt;=0;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 35:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=0;
+    F3&lt;=0;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=0;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=0;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 36:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=0;
+    F3&lt;=0;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=0;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 37:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=0;
+    F3&lt;=0;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=0;
+    E4&lt;=0;
+    F4&lt;=0;
+    G4&lt;=0;
+ end
+ 38:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=0;
+    F3&lt;=0;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 39:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=0;
+    F3&lt;=0;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=0;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 40:
+ begin
+    //Izquierda
+    A3&lt;=0;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=0;
+    E3&lt;=0;
+    F3&lt;=1;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=1;
+    G4&lt;=0;
+ end
+ 41:
+ begin
+    //Izquierda
+    A3&lt;=0;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=0;
+    E3&lt;=0;
+    F3&lt;=1;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=0;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=0;
+    E4&lt;=0;
+    F4&lt;=0;
+    G4&lt;=0;
+ end
+ 42:
+ begin
+    //Izquierda
+    A3&lt;=0;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=0;
+    E3&lt;=0;
+    F3&lt;=1;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=0;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=0;
+    G4&lt;=1;
+ end
+ 43:
+ begin
+    //Izquierda
+    A3&lt;=0;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=0;
+    E3&lt;=0;
+    F3&lt;=1;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=0;
+    F4&lt;=0;
+    G4&lt;=1;
+ end
+ 44:
+ begin
+    //Izquierda
+    A3&lt;=0;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=0;
+    E3&lt;=0;
+    F3&lt;=1;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=0;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=0;
+    E4&lt;=0;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 45:
+ begin
+    //Izquierda
+    A3&lt;=0;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=0;
+    E3&lt;=0;
+    F3&lt;=1;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=0;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=0;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 46:
+ begin
+    //Izquierda
+    A3&lt;=0;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=0;
+    E3&lt;=0;
+    F3&lt;=1;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=0;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 47:
+ begin
+    //Izquierda
+    A3&lt;=0;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=0;
+    E3&lt;=0;
+    F3&lt;=1;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=0;
+    E4&lt;=0;
+    F4&lt;=0;
+    G4&lt;=0;
+ end
+ 48:
+ begin
+    //Izquierda
+    A3&lt;=0;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=0;
+    E3&lt;=0;
+    F3&lt;=1;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 49:
+ begin
+    //Izquierda
+    A3&lt;=0;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=0;
+    E3&lt;=0;
+    F3&lt;=1;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=0;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 50:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=0;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=0;
+    F3&lt;=1;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=1;
+    G4&lt;=0;
+ end
+ 51:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=0;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=0;
+    F3&lt;=1;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=0;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=0;
+    E4&lt;=0;
+    F4&lt;=0;
+    G4&lt;=0;
+ end
+ 52:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=0;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=0;
+    F3&lt;=1;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=0;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=0;
+    G4&lt;=1;
+ end
+ 53:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=0;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=0;
+    F3&lt;=1;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=0;
+    F4&lt;=0;
+    G4&lt;=1;
+ end
+ 54:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=0;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=0;
+    F3&lt;=1;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=0;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=0;
+    E4&lt;=0;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 55:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=0;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=0;
+    F3&lt;=1;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=0;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=0;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 56:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=0;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=0;
+    F3&lt;=1;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=0;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 57:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=0;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=0;
+    F3&lt;=1;
+    G3&lt;=1; 
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=0;
+    E4&lt;=0;
+    F4&lt;=0;
+    G4&lt;=0;
+ end
+ 58:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=0;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=0;
+    F3&lt;=1;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=1;
+    G4&lt;=1;
+ end
+ 59:
+begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=0;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=0;
+    F3&lt;=1;
+    G3&lt;=1;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=0;
+    F4&lt;=1;
+    G4&lt;=1;
+end
+ default:
+ begin
+    //Izquierda
+    A3&lt;=1;
+    B3&lt;=1;
+    C3&lt;=1;
+    D3&lt;=1;
+    E3&lt;=1;
+    F3&lt;=1;
+    G3&lt;=0;
+    //Derecha
+    A4&lt;=1;
+    B4&lt;=1;
+    C4&lt;=1;
+    D4&lt;=1;
+    E4&lt;=1;
+    F4&lt;=1;
+    G4&lt;=0;
+ end
+endcase
+end
+endmodule</string>
+        </entry>
+        <entry>
+          <string>externalOutputs</string>
+          <string>A3,B3,C3,D3,E3,F3,G3,DP3,A4,B4,C4,D4,E4,F4,G4,DP4</string>
+        </entry>
+      </elementAttributes>
+      <pos x="-40" y="600"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>CLK</string>
+        </entry>
+      </elementAttributes>
+      <pos x="-100" y="640"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>MIN</string>
+        </entry>
+      </elementAttributes>
+      <pos x="-100" y="600"/>
+    </visualElement>
+    <visualElement>
+      <elementName>External</elementName>
+      <elementAttributes>
+        <entry>
+          <string>applicationType</string>
+          <appType>IVERILOG</appType>
+        </entry>
+        <entry>
+          <string>Label</string>
+          <string>Controlador_SEG</string>
+        </entry>
+        <entry>
+          <string>externalInputs</string>
+          <string>SEG:6,CLK,ALARM</string>
+        </entry>
+        <entry>
+          <string>Code</string>
+          <string>module Controlador_SEG(
+    input [5:0] SEG,
+    input CLK,
+    input ALARM,
+    //Digito Izquierda
+    output reg A5,
+    output reg B5,
+    output reg C5,
+    output reg D5,
+    output reg E5,
+    output reg F5,
+    output reg G5,
+    output reg DP5,
+    //Digito Derecho
+    output reg A6,
+    output reg B6,
+    output reg C6,
+    output reg D6,
+    output reg E6,
+    output reg F6,
+    output reg G6,
+    output reg DP6
+);
+initial begin
+    //Izquierda
+    A5=0;
+    B5=0;
+    C5=0;
+    D5=0;
+    E5=0;
+    F5=0;
+    G5=0;
+    DP5=0;
+    //Derecha
+    A6=0;
+    B6=0;
+    C6=0;
+    D6=0;
+    E6=0;
+    F6=0;
+    G6=0;
+    DP6=1;
+end
+
+    reg[5:0] numero;
+
+always @(posedge CLK)
+begin
+    if(ALARM)
+    begin
+        numero&lt;=0;
+    end
+    else
+    begin
+        numero&lt;=SEG;
+    end
+ case(numero)
+ 0:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=1;
+    F5&lt;=1;
+    G5&lt;=0;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=1;
+    G6&lt;=0;
+ end
+ 1:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=1;
+    F5&lt;=1;
+    G5&lt;=0;
+    //Derecha
+    A6&lt;=0;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=0;
+    E6&lt;=0;
+    F6&lt;=0;
+    G6&lt;=0;
+ end
+ 2:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=1;
+    F5&lt;=1;
+    G5&lt;=0;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=0;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=0;
+    G6&lt;=1;
+ end
+ 3:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=1;
+    F5&lt;=1;
+    G5&lt;=0;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=0;
+    F6&lt;=0;
+    G6&lt;=1;
+ end
+ 4:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=1;
+    F5&lt;=1;
+    G5&lt;=0;
+    //Derecha
+    A6&lt;=0;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=0;
+    E6&lt;=0;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 5:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=1;
+    F5&lt;=1;
+    G5&lt;=0;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=0;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=0;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 6:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=1;
+    F5&lt;=1;
+    G5&lt;=0;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=0;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 7:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=1;
+    F5&lt;=1;
+    G5&lt;=0;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=0;
+    E6&lt;=0;
+    F6&lt;=0;
+    G6&lt;=0;
+ end
+ 8:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=1;
+    F5&lt;=1;
+    G5&lt;=0;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 9:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=1;
+    F5&lt;=1;
+    G5&lt;=0;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=0;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 10:
+ begin
+    //Izquierda
+    A5&lt;=0;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=0;
+    E5&lt;=0;
+    F5&lt;=0;
+    G5&lt;=0;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=1;
+    G6&lt;=0;
+ end
+ 11:
+ begin
+    //Izquierda
+    A5&lt;=0;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=0;
+    E5&lt;=0;
+    F5&lt;=0;
+    G5&lt;=0;
+    //Derecha
+    A6&lt;=0;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=0;
+    E6&lt;=0;
+    F6&lt;=0;
+    G6&lt;=0;
+ end
+ 12:
+ begin
+    //Izquierda
+    A5&lt;=0;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=0;
+    E5&lt;=0;
+    F5&lt;=0;
+    G5&lt;=0;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=0;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=0;
+    G6&lt;=1;
+ end
+ 13:
+ begin
+    //Izquierda
+    A5&lt;=0;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=0;
+    E5&lt;=0;
+    F5&lt;=0;
+    G5&lt;=0;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=0;
+    F6&lt;=0;
+    G6&lt;=1;
+ end
+ 14:
+ begin
+    //Izquierda
+    A5&lt;=0;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=0;
+    E5&lt;=0;
+    F5&lt;=0;
+    G5&lt;=0;
+    //Derecha
+    A6&lt;=0;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=0;
+    E6&lt;=0;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 15:
+ begin
+    //Izquierda
+    A5&lt;=0;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=0;
+    E5&lt;=0;
+    F5&lt;=0;
+    G5&lt;=0;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=0;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=0;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 16:
+ begin
+    //Izquierda
+    A5&lt;=0;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=0;
+    E5&lt;=0;
+    F5&lt;=0;
+    G5&lt;=0;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=0;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 17:
+ begin
+    //Izquierda
+    A5&lt;=0;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=0;
+    E5&lt;=0;
+    F5&lt;=0;
+    G5&lt;=0;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=0;
+    E6&lt;=0;
+    F6&lt;=0;
+    G6&lt;=0;
+ end
+ 18:
+ begin
+    //Izquierda
+    A5&lt;=0;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=0;
+    E5&lt;=0;
+    F5&lt;=0;
+    G5&lt;=0;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 19:
+ begin
+    //Izquierda
+    A5&lt;=0;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=0;
+    E5&lt;=0;
+    F5&lt;=0;
+    G5&lt;=0;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=0;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 20:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=0;
+    D5&lt;=1;
+    E5&lt;=1;
+    F5&lt;=0;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=1;
+    G6&lt;=0;
+ end
+ 21:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=0;
+    D5&lt;=1;
+    E5&lt;=1;
+    F5&lt;=0;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=0;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=0;
+    E6&lt;=0;
+    F6&lt;=0;
+    G6&lt;=0;
+ end
+ 22:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=0;
+    D5&lt;=1;
+    E5&lt;=1;
+    F5&lt;=0;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=0;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=0;
+    G6&lt;=1;
+ end
+ 23:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=0;
+    D5&lt;=1;
+    E5&lt;=1;
+    F5&lt;=0;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=0;
+    F6&lt;=0;
+    G6&lt;=1;
+ end
+ 24:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=0;
+    D5&lt;=1;
+    E5&lt;=1;
+    F5&lt;=0;
+    G5&lt;=1;  
+    //Derecha
+    A6&lt;=0;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=0;
+    E6&lt;=0;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 25:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=0;
+    D5&lt;=1;
+    E5&lt;=1;
+    F5&lt;=0;
+    G5&lt;=1;  
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=0;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=0;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 26:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=0;
+    D5&lt;=1;
+    E5&lt;=1;
+    F5&lt;=0;
+    G5&lt;=1;  
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=0;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 27:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=0;
+    D5&lt;=1;
+    E5&lt;=1;
+    F5&lt;=0;
+    G5&lt;=1;  
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=0;
+    E6&lt;=0;
+    F6&lt;=0;
+    G6&lt;=0;   
+ end
+ 28:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=0;
+    D5&lt;=1;
+    E5&lt;=1;
+    F5&lt;=0;
+    G5&lt;=1;  
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 29:
+ begin
+     
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=0;
+    D5&lt;=1;
+    E5&lt;=1;
+    F5&lt;=0;
+    G5&lt;=1; 
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=0;
+    F6&lt;=1;
+    G6&lt;=1; 
+ end
+ 30:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=0;
+    F5&lt;=0;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=1;
+    G6&lt;=0;
+ end
+ 31:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=0;
+    F5&lt;=0;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=0;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=0;
+    E6&lt;=0;
+    F6&lt;=0;
+    G6&lt;=0;
+ end
+ 32:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=0;
+    F5&lt;=0;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=0;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=0;
+    G6&lt;=1;
+ end
+ 33:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=0;
+    F5&lt;=0;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=0;
+    F6&lt;=0;
+    G6&lt;=1;   
+ end
+ 34:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=0;
+    F5&lt;=0;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=0;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=0;
+    E6&lt;=0;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 35:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=0;
+    F5&lt;=0;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=0;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=0;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 36:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=0;
+    F5&lt;=0;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=0;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 37:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=0;
+    F5&lt;=0;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=0;
+    E6&lt;=0;
+    F6&lt;=0;
+    G6&lt;=0;
+ end
+ 38:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=0;
+    F5&lt;=0;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 39:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=0;
+    F5&lt;=0;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=0;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 40:
+ begin
+    //Izquierda
+    A5&lt;=0;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=0;
+    E5&lt;=0;
+    F5&lt;=1;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=1;
+    G6&lt;=0;
+ end
+ 41:
+ begin
+    //Izquierda
+    A5&lt;=0;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=0;
+    E5&lt;=0;
+    F5&lt;=1;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=0;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=0;
+    E6&lt;=0;
+    F6&lt;=0;
+    G6&lt;=0;
+ end
+ 42:
+ begin
+    //Izquierda
+    A5&lt;=0;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=0;
+    E5&lt;=0;
+    F5&lt;=1;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=0;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=0;
+    G6&lt;=1;
+ end
+ 43:
+ begin
+    //Izquierda
+    A5&lt;=0;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=0;
+    E5&lt;=0;
+    F5&lt;=1;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=0;
+    F6&lt;=0;
+    G6&lt;=1;
+ end
+ 44:
+ begin
+    //Izquierda
+    A5&lt;=0;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=0;
+    E5&lt;=0;
+    F5&lt;=1;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=0;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=0;
+    E6&lt;=0;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 45:
+ begin
+    //Izquierda
+    A5&lt;=0;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=0;
+    E5&lt;=0;
+    F5&lt;=1;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=0;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=0;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 46:
+ begin
+    //Izquierda
+    A5&lt;=0;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=0;
+    E5&lt;=0;
+    F5&lt;=1;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=0;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 47:
+ begin
+    //Izquierda
+    A5&lt;=0;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=0;
+    E5&lt;=0;
+    F5&lt;=1;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=0;
+    E6&lt;=0;
+    F6&lt;=0;
+    G6&lt;=0;
+ end
+ 48:
+ begin
+    //Izquierda
+    A5&lt;=0;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=0;
+    E5&lt;=0;
+    F5&lt;=1;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 49:
+ begin
+    //Izquierda
+    A5&lt;=0;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=0;
+    E5&lt;=0;
+    F5&lt;=1;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=0;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 50:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=0;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=0;
+    F5&lt;=1;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=1;
+    G6&lt;=0;
+ end
+ 51:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=0;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=0;
+    F5&lt;=1;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=0;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=0;
+    E6&lt;=0;
+    F6&lt;=0;
+    G6&lt;=0;
+ end
+ 52:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=0;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=0;
+    F5&lt;=1;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=0;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=0;
+    G6&lt;=1;
+ end
+ 53:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=0;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=0;
+    F5&lt;=1;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=0;
+    F6&lt;=0;
+    G6&lt;=1;
+ end
+ 54:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=0;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=0;
+    F5&lt;=1;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=0;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=0;
+    E6&lt;=0;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 55:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=0;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=0;
+    F5&lt;=1;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=0;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=0;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 56:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=0;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=0;
+    F5&lt;=1;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=0;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 57:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=0;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=0;
+    F5&lt;=1;
+    G5&lt;=1; 
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=0;
+    E6&lt;=0;
+    F6&lt;=0;
+    G6&lt;=0;
+ end
+ 58:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=0;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=0;
+    F5&lt;=1;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=1;
+    G6&lt;=1;
+ end
+ 59:
+begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=0;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=0;
+    F5&lt;=1;
+    G5&lt;=1;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=0;
+    F6&lt;=1;
+    G6&lt;=1;
+end
+ default:
+ begin
+    //Izquierda
+    A5&lt;=1;
+    B5&lt;=1;
+    C5&lt;=1;
+    D5&lt;=1;
+    E5&lt;=1;
+    F5&lt;=1;
+    G5&lt;=0;
+    //Derecha
+    A6&lt;=1;
+    B6&lt;=1;
+    C6&lt;=1;
+    D6&lt;=1;
+    E6&lt;=1;
+    F6&lt;=1;
+    G6&lt;=0;
+ end
+endcase
+end
+endmodule</string>
+        </entry>
+        <entry>
+          <string>externalOutputs</string>
+          <string>A5,B5,C5,D5,E5,F5,G5,DP5,A6,B6,C6,D6,E6,F6,G6,DP6</string>
+        </entry>
+        <entry>
+          <string>Width</string>
+          <int>5</int>
+        </entry>
+      </elementAttributes>
+      <pos x="320" y="600"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>CLK</string>
+        </entry>
+      </elementAttributes>
+      <pos x="260" y="620"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>SEG</string>
+        </entry>
+      </elementAttributes>
+      <pos x="260" y="600"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Seven-Seg</elementName>
+      <elementAttributes/>
+      <pos x="840" y="200"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Seven-Seg</elementName>
+      <elementAttributes/>
+      <pos x="940" y="200"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>A5</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="180"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>B5</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="160"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>C5</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="140"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>D5</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="120"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>A6</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="100"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>B6</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="80"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>C6</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="60"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>D6</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="40"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>E5</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="360"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>F5</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="380"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>G5</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="400"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>DP5</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="420"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>E6</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="440"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>F6</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="460"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>G6</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="480"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>DP6</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="500"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Text</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Description</string>
+          <string>Horas</string>
+        </entry>
+      </elementAttributes>
+      <pos x="400" y="0"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Text</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Description</string>
+          <string>Minutos</string>
+        </entry>
+      </elementAttributes>
+      <pos x="620" y="0"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Text</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Description</string>
+          <string>Segundos</string>
+        </entry>
+      </elementAttributes>
+      <pos x="840" y="0"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Bits</string>
+          <int>6</int>
+        </entry>
+      </elementAttributes>
+      <pos x="1140" y="680"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Bits</string>
+          <int>6</int>
+        </entry>
+      </elementAttributes>
+      <pos x="1140" y="740"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Bits</string>
+          <int>6</int>
+        </entry>
+      </elementAttributes>
+      <pos x="1140" y="920"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Bits</string>
+          <int>6</int>
+        </entry>
+      </elementAttributes>
+      <pos x="1140" y="860"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes/>
+      <pos x="1140" y="800"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>TMIN</string>
+        </entry>
+      </elementAttributes>
+      <pos x="-100" y="620"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>MALARM</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1180" y="800"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>MALARM</string>
+        </entry>
+      </elementAttributes>
+      <pos x="-100" y="660"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>MALARM</string>
+        </entry>
+      </elementAttributes>
+      <pos x="260" y="640"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>MALARM</string>
+        </entry>
+      </elementAttributes>
+      <pos x="-100" y="280"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>THORA</string>
+        </entry>
+      </elementAttributes>
+      <pos x="-100" y="260"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>A1</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="220"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>B1</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="240"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>C1</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="260"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>D1</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="280"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>E1</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="300"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>F1</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="320"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>G1</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="340"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>DP1</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="360"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>A2</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="380"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>B2</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="400"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>C2</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="420"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>D2</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="440"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>E2</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="460"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>F2</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="480"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>G2</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="500"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>DP2</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="520"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>A3</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="600"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>B3</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="620"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>C3</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="640"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>D3</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="660"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>E3</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="680"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>F3</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="700"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>G3</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="720"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>DP3</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="740"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>A4</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="760"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>B4</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="780"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>C4</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="800"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>D4</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="820"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>E4</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="840"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>F4</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="860"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>G4</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="880"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>DP4</string>
+        </entry>
+      </elementAttributes>
+      <pos x="100" y="900"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>E6</string>
+        </entry>
+      </elementAttributes>
+      <pos x="460" y="840"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>F6</string>
+        </entry>
+      </elementAttributes>
+      <pos x="460" y="860"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>G6</string>
+        </entry>
+      </elementAttributes>
+      <pos x="460" y="880"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>DP6</string>
+        </entry>
+      </elementAttributes>
+      <pos x="460" y="900"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>E5</string>
+        </entry>
+      </elementAttributes>
+      <pos x="460" y="680"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>F5</string>
+        </entry>
+      </elementAttributes>
+      <pos x="460" y="700"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>G5</string>
+        </entry>
+      </elementAttributes>
+      <pos x="460" y="720"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>DP5</string>
+        </entry>
+      </elementAttributes>
+      <pos x="460" y="740"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>A5</string>
+        </entry>
+      </elementAttributes>
+      <pos x="460" y="600"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>B5</string>
+        </entry>
+      </elementAttributes>
+      <pos x="460" y="620"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>C5</string>
+        </entry>
+      </elementAttributes>
+      <pos x="460" y="640"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>D5</string>
+        </entry>
+      </elementAttributes>
+      <pos x="460" y="660"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>A6</string>
+        </entry>
+      </elementAttributes>
+      <pos x="460" y="760"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>B6</string>
+        </entry>
+      </elementAttributes>
+      <pos x="460" y="780"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>C6</string>
+        </entry>
+      </elementAttributes>
+      <pos x="460" y="800"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>D6</string>
+        </entry>
+      </elementAttributes>
+      <pos x="460" y="820"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes/>
+      <pos x="1140" y="620"/>
+    </visualElement>
+    <visualElement>
+      <elementName>In</elementName>
+      <elementAttributes/>
+      <pos x="1140" y="980"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Seven-Seg</elementName>
+      <elementAttributes>
+        <entry>
+          <string>ledPersistence</string>
+          <boolean>true</boolean>
+        </entry>
+      </elementAttributes>
+      <pos x="1080" y="200"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Seven-Seg</elementName>
+      <elementAttributes>
+        <entry>
+          <string>ledPersistence</string>
+          <boolean>true</boolean>
+        </entry>
+      </elementAttributes>
+      <pos x="1180" y="200"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>A7</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1060" y="180"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>B7</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1060" y="160"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>C7</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1060" y="140"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>D7</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1060" y="120"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>A8</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1060" y="100"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>B8</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1060" y="80"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>C8</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1060" y="60"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>D8</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1060" y="40"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>E7</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1060" y="360"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>F7</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1060" y="380"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>G7</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1060" y="400"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>DP7</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1060" y="420"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>E8</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1060" y="440"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>F8</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1060" y="460"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>G8</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1060" y="480"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>DP8</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1060" y="500"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Text</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Description</string>
+          <string>MiliSegundos</string>
+        </entry>
+      </elementAttributes>
+      <pos x="1080" y="0"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>SEG</string>
+        </entry>
+      </elementAttributes>
+      <pos x="180" y="20"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>MIN</string>
+        </entry>
+      </elementAttributes>
+      <pos x="180" y="40"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>HORA</string>
+        </entry>
+      </elementAttributes>
+      <pos x="180" y="60"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>ALARM</string>
+        </entry>
+      </elementAttributes>
+      <pos x="180" y="80"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Out</elementName>
+      <elementAttributes>
+        <entry>
+          <string>Bits</string>
+          <int>7</int>
+        </entry>
+        <entry>
+          <string>intFormat</string>
+          <intFormat>dec</intFormat>
+        </entry>
+      </elementAttributes>
+      <pos x="1040" y="620"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>MILSEG</string>
+        </entry>
+      </elementAttributes>
+      <pos x="960" y="620"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>MILSEG</string>
+        </entry>
+      </elementAttributes>
+      <pos x="180" y="0"/>
+    </visualElement>
+    <visualElement>
+      <elementName>External</elementName>
+      <elementAttributes>
+        <entry>
+          <string>applicationType</string>
+          <appType>IVERILOG</appType>
+        </entry>
+        <entry>
+          <string>Label</string>
+          <string>Controlador_MILSEG</string>
+        </entry>
+        <entry>
+          <string>externalInputs</string>
+          <string>MILSEG:7,CLK,ALARM</string>
+        </entry>
+        <entry>
+          <string>Width</string>
+          <int>5</int>
+        </entry>
+        <entry>
+          <string>Code</string>
+          <string>module Controlador_MILSEG(
+    input [6:0] MILSEG,
+    input CLK,
+    input ALARM,
+    //Digito Izquierda
+    output reg A7,
+    output reg B7,
+    output reg C7,
+    output reg D7,
+    output reg E7,
+    output reg F7,
+    output reg G7,
+    output reg DP7,
+    //Digito Derecho
+    output reg A8,
+    output reg B8,
+    output reg C8,
+    output reg D8,
+    output reg E8,
+    output reg F8,
+    output reg G8,
+    output reg DP8
+);
+initial begin
+    //Izquierda
+    A7=0;
+    B7=0;
+    C7=0;
+    D7=0;
+    E7=0;
+    F7=0;
+    G7=0;
+    DP7=0;
+    //Derecha
+    A8=0;
+    B8=0;
+    C8=0;
+    D8=0;
+    E8=0;
+    F8=0;
+    G8=0;
+    DP8=0;
+end
+
+    reg[5:0] numero;
+
+always @(posedge CLK)
+begin
+    if(ALARM)
+    begin
+        numero&lt;=0;
+    end
+    else
+    begin
+        numero&lt;=MILSEG;
+    end
+ case(numero)
+ 0:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=0;
+ end
+ 1:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=0;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=0;
+ end
+ 2:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=0;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=0;
+    G8&lt;=1;
+ end
+ 3:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=1;
+ end
+ 4:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=0;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 5:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=0;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 6:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=0;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 7:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=0;
+ end
+ 8:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 9:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 10:
+ begin
+    //Izquierda
+    A7&lt;=0;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=0;
+ end
+ 11:
+ begin
+    //Izquierda
+    A7&lt;=0;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=0;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=0;
+ end
+ 12:
+ begin
+    //Izquierda
+    A7&lt;=0;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=0;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=0;
+    G8&lt;=1;
+ end
+ 13:
+ begin
+    //Izquierda
+    A7&lt;=0;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=1;
+ end
+ 14:
+ begin
+    //Izquierda
+    A7&lt;=0;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=0;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 15:
+ begin
+    //Izquierda
+    A7&lt;=0;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=0;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 16:
+ begin
+    //Izquierda
+    A7&lt;=0;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=0;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 17:
+ begin
+    //Izquierda
+    A7&lt;=0;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=0;
+ end
+ 18:
+ begin
+    //Izquierda
+    A7&lt;=0;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 19:
+ begin
+    //Izquierda
+    A7&lt;=0;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 20:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=0;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=0;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=0;
+ end
+ 21:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=0;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=0;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=0;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=0;
+ end
+ 22:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=0;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=0;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=0;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=0;
+    G8&lt;=1;
+ end
+ 23:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=0;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=0;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=1;
+ end
+ 24:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=0;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=0;
+    G7&lt;=1;  
+    //Derecha
+    A8&lt;=0;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 25:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=0;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=0;
+    G7&lt;=1;  
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=0;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 26:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=0;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=0;
+    G7&lt;=1;  
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=0;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 27:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=0;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=0;
+    G7&lt;=1;  
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=0;   
+ end
+ 28:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=0;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=0;
+    G7&lt;=1;  
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 29:
+ begin
+     
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=0;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=0;
+    G7&lt;=1; 
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1; 
+ end
+ 30:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=0;
+ end
+ 31:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=0;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=0;
+ end
+ 32:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=0;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=0;
+    G8&lt;=1;
+ end
+ 33:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=1;   
+ end
+ 34:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=0;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 35:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=0;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 36:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=0;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 37:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=0;
+ end
+ 38:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 39:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 40:
+ begin
+    //Izquierda
+    A7&lt;=0;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=0;
+ end
+ 41:
+ begin
+    //Izquierda
+    A7&lt;=0;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=0;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=0;
+ end
+ 42:
+ begin
+    //Izquierda
+    A7&lt;=0;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=0;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=0;
+    G8&lt;=1;
+ end
+ 43:
+ begin
+    //Izquierda
+    A7&lt;=0;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=1;
+ end
+ 44:
+ begin
+    //Izquierda
+    A7&lt;=0;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=0;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 45:
+ begin
+    //Izquierda
+    A7&lt;=0;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=0;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 46:
+ begin
+    //Izquierda
+    A7&lt;=0;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=0;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 47:
+ begin
+    //Izquierda
+    A7&lt;=0;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=0;
+ end
+ 48:
+ begin
+    //Izquierda
+    A7&lt;=0;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 49:
+ begin
+    //Izquierda
+    A7&lt;=0;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 50:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=0;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=0;
+ end
+ 51:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=0;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=0;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=0;
+ end
+ 52:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=0;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=0;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=0;
+    G8&lt;=1;
+ end
+ 53:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=0;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=1;
+ end
+ 54:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=0;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=0;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 55:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=0;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=0;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 56:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=0;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=0;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 57:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=0;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1; 
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=0;
+ end
+ 58:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=0;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 59:
+begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=0;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+end
+ 60:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=0;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=0;
+ end
+ 61:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=0;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=0;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=0;
+ end
+ 62:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=0;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=0;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=0;
+    G8&lt;=1;
+ end
+ 63:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=0;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=1;
+ end
+ 64:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=0;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=0;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 65:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=0;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=0;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 66:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=0;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=0;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 67:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=0;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=0;
+ end
+ 68:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=0;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 69:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=0;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 70:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=0;
+ end
+ 71:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=0;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=0;
+ end
+ 72:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=0;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=0;
+    G8&lt;=1;
+ end
+ 73:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=1;
+ end
+ 74:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=0;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 75:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=0;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 76:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=0;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 77:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=0;
+ end
+ 78:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 79:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=0;
+    E7&lt;=0;
+    F7&lt;=0;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 80:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=0;
+ end
+ 81:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=0;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=0;
+ end
+ 82:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=0;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=0;
+    G8&lt;=1;
+ end
+ 83:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=1;
+ end
+ 84:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=0;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 85:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=0;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 86:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=0;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 87:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=0;   
+ end
+ 88:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 89:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1; 
+ end
+ 90:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=0;
+ end
+ 91:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=0;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=0;
+ end
+ 92:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=0;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=0;
+    G8&lt;=1;
+ end
+ 93:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=1;   
+ end
+ 94:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=0;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 95:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=0;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 96:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=0;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 97:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=0;
+    E8&lt;=0;
+    F8&lt;=0;
+    G8&lt;=0;
+ end
+ 98:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ 99:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=0;
+    F7&lt;=1;
+    G7&lt;=1;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=0;
+    F8&lt;=1;
+    G8&lt;=1;
+ end
+ default:
+ begin
+    //Izquierda
+    A7&lt;=1;
+    B7&lt;=1;
+    C7&lt;=1;
+    D7&lt;=1;
+    E7&lt;=1;
+    F7&lt;=1;
+    G7&lt;=0;
+    //Derecha
+    A8&lt;=1;
+    B8&lt;=1;
+    C8&lt;=1;
+    D8&lt;=1;
+    E8&lt;=1;
+    F8&lt;=1;
+    G8&lt;=0;
+ end
+endcase
+end
+endmodule</string>
+        </entry>
+        <entry>
+          <string>externalOutputs</string>
+          <string>A7,B7,C7,D7,E7,F7,G7,DP7,A8,B8,C8,D8,E8,F8,G8,DP8</string>
+        </entry>
+      </elementAttributes>
+      <pos x="680" y="600"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>CLK</string>
+        </entry>
+      </elementAttributes>
+      <pos x="620" y="620"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>MILSEG</string>
+        </entry>
+      </elementAttributes>
+      <pos x="620" y="600"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>rotation</string>
+          <rotation rotation="2"/>
+        </entry>
+        <entry>
+          <string>NetName</string>
+          <string>MALARM</string>
+        </entry>
+      </elementAttributes>
+      <pos x="620" y="640"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>E8</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="840"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>F8</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="860"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>G8</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="880"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>DP8</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="900"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>E7</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="680"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>F7</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="700"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>G7</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="720"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>DP7</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="740"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>A7</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="600"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>B7</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="620"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>C7</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="640"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>D7</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="660"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>A8</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="760"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>B8</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="780"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>C8</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="800"/>
+    </visualElement>
+    <visualElement>
+      <elementName>Tunnel</elementName>
+      <elementAttributes>
+        <entry>
+          <string>NetName</string>
+          <string>D8</string>
+        </entry>
+      </elementAttributes>
+      <pos x="820" y="820"/>
+    </visualElement>
+  </visualElements>
+  <wires>
+    <wire>
+      <p1 x="-100" y="640"/>
+      <p2 x="-40" y="640"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="640"/>
+      <p2 x="100" y="640"/>
+    </wire>
+    <wire>
+      <p1 x="260" y="640"/>
+      <p2 x="320" y="640"/>
+    </wire>
+    <wire>
+      <p1 x="420" y="640"/>
+      <p2 x="460" y="640"/>
+    </wire>
+    <wire>
+      <p1 x="620" y="640"/>
+      <p2 x="680" y="640"/>
+    </wire>
+    <wire>
+      <p1 x="780" y="640"/>
+      <p2 x="820" y="640"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="320"/>
+      <p2 x="100" y="320"/>
+    </wire>
+    <wire>
+      <p1 x="-140" y="0"/>
+      <p2 x="-100" y="0"/>
+    </wire>
+    <wire>
+      <p1 x="140" y="0"/>
+      <p2 x="180" y="0"/>
+    </wire>
+    <wire>
+      <p1 x="-100" y="260"/>
+      <p2 x="-40" y="260"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="260"/>
+      <p2 x="100" y="260"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="900"/>
+      <p2 x="100" y="900"/>
+    </wire>
+    <wire>
+      <p1 x="420" y="900"/>
+      <p2 x="460" y="900"/>
+    </wire>
+    <wire>
+      <p1 x="780" y="900"/>
+      <p2 x="820" y="900"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="520"/>
+      <p2 x="100" y="520"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="840"/>
+      <p2 x="100" y="840"/>
+    </wire>
+    <wire>
+      <p1 x="420" y="840"/>
+      <p2 x="460" y="840"/>
+    </wire>
+    <wire>
+      <p1 x="780" y="840"/>
+      <p2 x="820" y="840"/>
+    </wire>
+    <wire>
+      <p1 x="340" y="140"/>
+      <p2 x="400" y="140"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="140"/>
+      <p2 x="640" y="140"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="140"/>
+      <p2 x="880" y="140"/>
+    </wire>
+    <wire>
+      <p1 x="1060" y="140"/>
+      <p2 x="1120" y="140"/>
+    </wire>
+    <wire>
+      <p1 x="340" y="460"/>
+      <p2 x="480" y="460"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="460"/>
+      <p2 x="720" y="460"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="460"/>
+      <p2 x="960" y="460"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="460"/>
+      <p2 x="100" y="460"/>
+    </wire>
+    <wire>
+      <p1 x="1060" y="460"/>
+      <p2 x="1200" y="460"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="780"/>
+      <p2 x="100" y="780"/>
+    </wire>
+    <wire>
+      <p1 x="420" y="780"/>
+      <p2 x="460" y="780"/>
+    </wire>
+    <wire>
+      <p1 x="780" y="780"/>
+      <p2 x="820" y="780"/>
+    </wire>
+    <wire>
+      <p1 x="340" y="80"/>
+      <p2 x="480" y="80"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="80"/>
+      <p2 x="720" y="80"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="80"/>
+      <p2 x="960" y="80"/>
+    </wire>
+    <wire>
+      <p1 x="-140" y="80"/>
+      <p2 x="-100" y="80"/>
+    </wire>
+    <wire>
+      <p1 x="1060" y="80"/>
+      <p2 x="1200" y="80"/>
+    </wire>
+    <wire>
+      <p1 x="140" y="80"/>
+      <p2 x="180" y="80"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="400"/>
+      <p2 x="100" y="400"/>
+    </wire>
+    <wire>
+      <p1 x="340" y="400"/>
+      <p2 x="400" y="400"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="400"/>
+      <p2 x="640" y="400"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="400"/>
+      <p2 x="880" y="400"/>
+    </wire>
+    <wire>
+      <p1 x="1060" y="400"/>
+      <p2 x="1120" y="400"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="720"/>
+      <p2 x="100" y="720"/>
+    </wire>
+    <wire>
+      <p1 x="420" y="720"/>
+      <p2 x="460" y="720"/>
+    </wire>
+    <wire>
+      <p1 x="780" y="720"/>
+      <p2 x="820" y="720"/>
+    </wire>
+    <wire>
+      <p1 x="420" y="660"/>
+      <p2 x="460" y="660"/>
+    </wire>
+    <wire>
+      <p1 x="-100" y="660"/>
+      <p2 x="-40" y="660"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="660"/>
+      <p2 x="100" y="660"/>
+    </wire>
+    <wire>
+      <p1 x="780" y="660"/>
+      <p2 x="820" y="660"/>
+    </wire>
+    <wire>
+      <p1 x="-140" y="20"/>
+      <p2 x="-100" y="20"/>
+    </wire>
+    <wire>
+      <p1 x="140" y="20"/>
+      <p2 x="180" y="20"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="340"/>
+      <p2 x="100" y="340"/>
+    </wire>
+    <wire>
+      <p1 x="1140" y="980"/>
+      <p2 x="1180" y="980"/>
+    </wire>
+    <wire>
+      <p1 x="260" y="600"/>
+      <p2 x="320" y="600"/>
+    </wire>
+    <wire>
+      <p1 x="420" y="600"/>
+      <p2 x="460" y="600"/>
+    </wire>
+    <wire>
+      <p1 x="-100" y="600"/>
+      <p2 x="-40" y="600"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="600"/>
+      <p2 x="100" y="600"/>
+    </wire>
+    <wire>
+      <p1 x="620" y="600"/>
+      <p2 x="680" y="600"/>
+    </wire>
+    <wire>
+      <p1 x="780" y="600"/>
+      <p2 x="820" y="600"/>
+    </wire>
+    <wire>
+      <p1 x="-100" y="280"/>
+      <p2 x="-40" y="280"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="280"/>
+      <p2 x="100" y="280"/>
+    </wire>
+    <wire>
+      <p1 x="1140" y="920"/>
+      <p2 x="1180" y="920"/>
+    </wire>
+    <wire>
+      <p1 x="960" y="860"/>
+      <p2 x="1040" y="860"/>
+    </wire>
+    <wire>
+      <p1 x="1140" y="860"/>
+      <p2 x="1180" y="860"/>
+    </wire>
+    <wire>
+      <p1 x="420" y="860"/>
+      <p2 x="460" y="860"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="860"/>
+      <p2 x="100" y="860"/>
+    </wire>
+    <wire>
+      <p1 x="780" y="860"/>
+      <p2 x="820" y="860"/>
+    </wire>
+    <wire>
+      <p1 x="-100" y="220"/>
+      <p2 x="-40" y="220"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="220"/>
+      <p2 x="100" y="220"/>
+    </wire>
+    <wire>
+      <p1 x="960" y="800"/>
+      <p2 x="1040" y="800"/>
+    </wire>
+    <wire>
+      <p1 x="1140" y="800"/>
+      <p2 x="1180" y="800"/>
+    </wire>
+    <wire>
+      <p1 x="420" y="800"/>
+      <p2 x="460" y="800"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="800"/>
+      <p2 x="100" y="800"/>
+    </wire>
+    <wire>
+      <p1 x="780" y="800"/>
+      <p2 x="820" y="800"/>
+    </wire>
+    <wire>
+      <p1 x="340" y="480"/>
+      <p2 x="500" y="480"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="480"/>
+      <p2 x="740" y="480"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="480"/>
+      <p2 x="980" y="480"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="480"/>
+      <p2 x="100" y="480"/>
+    </wire>
+    <wire>
+      <p1 x="1060" y="480"/>
+      <p2 x="1220" y="480"/>
+    </wire>
+    <wire>
+      <p1 x="340" y="160"/>
+      <p2 x="380" y="160"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="160"/>
+      <p2 x="620" y="160"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="160"/>
+      <p2 x="860" y="160"/>
+    </wire>
+    <wire>
+      <p1 x="1060" y="160"/>
+      <p2 x="1100" y="160"/>
+    </wire>
+    <wire>
+      <p1 x="960" y="740"/>
+      <p2 x="1040" y="740"/>
+    </wire>
+    <wire>
+      <p1 x="1140" y="740"/>
+      <p2 x="1180" y="740"/>
+    </wire>
+    <wire>
+      <p1 x="420" y="740"/>
+      <p2 x="460" y="740"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="740"/>
+      <p2 x="100" y="740"/>
+    </wire>
+    <wire>
+      <p1 x="780" y="740"/>
+      <p2 x="820" y="740"/>
+    </wire>
+    <wire>
+      <p1 x="340" y="100"/>
+      <p2 x="460" y="100"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="100"/>
+      <p2 x="700" y="100"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="100"/>
+      <p2 x="940" y="100"/>
+    </wire>
+    <wire>
+      <p1 x="-140" y="100"/>
+      <p2 x="-100" y="100"/>
+    </wire>
+    <wire>
+      <p1 x="1060" y="100"/>
+      <p2 x="1180" y="100"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="420"/>
+      <p2 x="100" y="420"/>
+    </wire>
+    <wire>
+      <p1 x="340" y="420"/>
+      <p2 x="420" y="420"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="420"/>
+      <p2 x="660" y="420"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="420"/>
+      <p2 x="900" y="420"/>
+    </wire>
+    <wire>
+      <p1 x="1060" y="420"/>
+      <p2 x="1140" y="420"/>
+    </wire>
+    <wire>
+      <p1 x="960" y="680"/>
+      <p2 x="1040" y="680"/>
+    </wire>
+    <wire>
+      <p1 x="1140" y="680"/>
+      <p2 x="1180" y="680"/>
+    </wire>
+    <wire>
+      <p1 x="420" y="680"/>
+      <p2 x="460" y="680"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="680"/>
+      <p2 x="100" y="680"/>
+    </wire>
+    <wire>
+      <p1 x="780" y="680"/>
+      <p2 x="820" y="680"/>
+    </wire>
+    <wire>
+      <p1 x="-140" y="40"/>
+      <p2 x="-100" y="40"/>
+    </wire>
+    <wire>
+      <p1 x="340" y="40"/>
+      <p2 x="520" y="40"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="40"/>
+      <p2 x="760" y="40"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="40"/>
+      <p2 x="1000" y="40"/>
+    </wire>
+    <wire>
+      <p1 x="1060" y="40"/>
+      <p2 x="1240" y="40"/>
+    </wire>
+    <wire>
+      <p1 x="140" y="40"/>
+      <p2 x="180" y="40"/>
+    </wire>
+    <wire>
+      <p1 x="340" y="360"/>
+      <p2 x="360" y="360"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="360"/>
+      <p2 x="600" y="360"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="360"/>
+      <p2 x="840" y="360"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="360"/>
+      <p2 x="100" y="360"/>
+    </wire>
+    <wire>
+      <p1 x="1060" y="360"/>
+      <p2 x="1080" y="360"/>
+    </wire>
+    <wire>
+      <p1 x="960" y="620"/>
+      <p2 x="1040" y="620"/>
+    </wire>
+    <wire>
+      <p1 x="1140" y="620"/>
+      <p2 x="1180" y="620"/>
+    </wire>
+    <wire>
+      <p1 x="260" y="620"/>
+      <p2 x="320" y="620"/>
+    </wire>
+    <wire>
+      <p1 x="420" y="620"/>
+      <p2 x="460" y="620"/>
+    </wire>
+    <wire>
+      <p1 x="-100" y="620"/>
+      <p2 x="-40" y="620"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="620"/>
+      <p2 x="100" y="620"/>
+    </wire>
+    <wire>
+      <p1 x="620" y="620"/>
+      <p2 x="680" y="620"/>
+    </wire>
+    <wire>
+      <p1 x="780" y="620"/>
+      <p2 x="820" y="620"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="300"/>
+      <p2 x="100" y="300"/>
+    </wire>
+    <wire>
+      <p1 x="1140" y="560"/>
+      <p2 x="1180" y="560"/>
+    </wire>
+    <wire>
+      <p1 x="420" y="880"/>
+      <p2 x="460" y="880"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="880"/>
+      <p2 x="100" y="880"/>
+    </wire>
+    <wire>
+      <p1 x="780" y="880"/>
+      <p2 x="820" y="880"/>
+    </wire>
+    <wire>
+      <p1 x="-100" y="240"/>
+      <p2 x="-40" y="240"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="240"/>
+      <p2 x="100" y="240"/>
+    </wire>
+    <wire>
+      <p1 x="420" y="820"/>
+      <p2 x="460" y="820"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="820"/>
+      <p2 x="100" y="820"/>
+    </wire>
+    <wire>
+      <p1 x="780" y="820"/>
+      <p2 x="820" y="820"/>
+    </wire>
+    <wire>
+      <p1 x="340" y="500"/>
+      <p2 x="520" y="500"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="500"/>
+      <p2 x="760" y="500"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="500"/>
+      <p2 x="1000" y="500"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="500"/>
+      <p2 x="100" y="500"/>
+    </wire>
+    <wire>
+      <p1 x="1060" y="500"/>
+      <p2 x="1240" y="500"/>
+    </wire>
+    <wire>
+      <p1 x="340" y="180"/>
+      <p2 x="360" y="180"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="180"/>
+      <p2 x="600" y="180"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="180"/>
+      <p2 x="840" y="180"/>
+    </wire>
+    <wire>
+      <p1 x="1060" y="180"/>
+      <p2 x="1080" y="180"/>
+    </wire>
+    <wire>
+      <p1 x="420" y="760"/>
+      <p2 x="460" y="760"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="760"/>
+      <p2 x="100" y="760"/>
+    </wire>
+    <wire>
+      <p1 x="780" y="760"/>
+      <p2 x="820" y="760"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="440"/>
+      <p2 x="100" y="440"/>
+    </wire>
+    <wire>
+      <p1 x="340" y="440"/>
+      <p2 x="460" y="440"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="440"/>
+      <p2 x="700" y="440"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="440"/>
+      <p2 x="940" y="440"/>
+    </wire>
+    <wire>
+      <p1 x="1060" y="440"/>
+      <p2 x="1180" y="440"/>
+    </wire>
+    <wire>
+      <p1 x="340" y="120"/>
+      <p2 x="420" y="120"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="120"/>
+      <p2 x="660" y="120"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="120"/>
+      <p2 x="900" y="120"/>
+    </wire>
+    <wire>
+      <p1 x="-140" y="120"/>
+      <p2 x="-100" y="120"/>
+    </wire>
+    <wire>
+      <p1 x="1060" y="120"/>
+      <p2 x="1140" y="120"/>
+    </wire>
+    <wire>
+      <p1 x="-140" y="60"/>
+      <p2 x="-100" y="60"/>
+    </wire>
+    <wire>
+      <p1 x="340" y="60"/>
+      <p2 x="500" y="60"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="60"/>
+      <p2 x="740" y="60"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="60"/>
+      <p2 x="980" y="60"/>
+    </wire>
+    <wire>
+      <p1 x="1060" y="60"/>
+      <p2 x="1220" y="60"/>
+    </wire>
+    <wire>
+      <p1 x="140" y="60"/>
+      <p2 x="180" y="60"/>
+    </wire>
+    <wire>
+      <p1 x="420" y="700"/>
+      <p2 x="460" y="700"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="700"/>
+      <p2 x="100" y="700"/>
+    </wire>
+    <wire>
+      <p1 x="780" y="700"/>
+      <p2 x="820" y="700"/>
+    </wire>
+    <wire>
+      <p1 x="340" y="380"/>
+      <p2 x="380" y="380"/>
+    </wire>
+    <wire>
+      <p1 x="580" y="380"/>
+      <p2 x="620" y="380"/>
+    </wire>
+    <wire>
+      <p1 x="820" y="380"/>
+      <p2 x="860" y="380"/>
+    </wire>
+    <wire>
+      <p1 x="60" y="380"/>
+      <p2 x="100" y="380"/>
+    </wire>
+    <wire>
+      <p1 x="1060" y="380"/>
+      <p2 x="1100" y="380"/>
+    </wire>
+    <wire>
+      <p1 x="640" y="140"/>
+      <p2 x="640" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="640" y="340"/>
+      <p2 x="640" y="400"/>
+    </wire>
+    <wire>
+      <p1 x="960" y="80"/>
+      <p2 x="960" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="960" y="340"/>
+      <p2 x="960" y="460"/>
+    </wire>
+    <wire>
+      <p1 x="900" y="120"/>
+      <p2 x="900" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="900" y="340"/>
+      <p2 x="900" y="420"/>
+    </wire>
+    <wire>
+      <p1 x="1220" y="60"/>
+      <p2 x="1220" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="1220" y="340"/>
+      <p2 x="1220" y="480"/>
+    </wire>
+    <wire>
+      <p1 x="520" y="40"/>
+      <p2 x="520" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="520" y="340"/>
+      <p2 x="520" y="500"/>
+    </wire>
+    <wire>
+      <p1 x="840" y="180"/>
+      <p2 x="840" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="840" y="340"/>
+      <p2 x="840" y="360"/>
+    </wire>
+    <wire>
+      <p1 x="460" y="100"/>
+      <p2 x="460" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="460" y="340"/>
+      <p2 x="460" y="440"/>
+    </wire>
+    <wire>
+      <p1 x="1100" y="160"/>
+      <p2 x="1100" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="1100" y="340"/>
+      <p2 x="1100" y="380"/>
+    </wire>
+    <wire>
+      <p1 x="400" y="140"/>
+      <p2 x="400" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="400" y="340"/>
+      <p2 x="400" y="400"/>
+    </wire>
+    <wire>
+      <p1 x="720" y="80"/>
+      <p2 x="720" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="720" y="340"/>
+      <p2 x="720" y="460"/>
+    </wire>
+    <wire>
+      <p1 x="660" y="120"/>
+      <p2 x="660" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="660" y="340"/>
+      <p2 x="660" y="420"/>
+    </wire>
+    <wire>
+      <p1 x="980" y="60"/>
+      <p2 x="980" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="980" y="340"/>
+      <p2 x="980" y="480"/>
+    </wire>
+    <wire>
+      <p1 x="600" y="180"/>
+      <p2 x="600" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="600" y="340"/>
+      <p2 x="600" y="360"/>
+    </wire>
+    <wire>
+      <p1 x="1240" y="40"/>
+      <p2 x="1240" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="1240" y="340"/>
+      <p2 x="1240" y="500"/>
+    </wire>
+    <wire>
+      <p1 x="860" y="160"/>
+      <p2 x="860" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="860" y="340"/>
+      <p2 x="860" y="380"/>
+    </wire>
+    <wire>
+      <p1 x="1180" y="100"/>
+      <p2 x="1180" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="1180" y="340"/>
+      <p2 x="1180" y="440"/>
+    </wire>
+    <wire>
+      <p1 x="480" y="80"/>
+      <p2 x="480" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="480" y="340"/>
+      <p2 x="480" y="460"/>
+    </wire>
+    <wire>
+      <p1 x="1120" y="140"/>
+      <p2 x="1120" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="1120" y="340"/>
+      <p2 x="1120" y="400"/>
+    </wire>
+    <wire>
+      <p1 x="420" y="120"/>
+      <p2 x="420" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="420" y="340"/>
+      <p2 x="420" y="420"/>
+    </wire>
+    <wire>
+      <p1 x="740" y="60"/>
+      <p2 x="740" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="740" y="340"/>
+      <p2 x="740" y="480"/>
+    </wire>
+    <wire>
+      <p1 x="360" y="180"/>
+      <p2 x="360" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="360" y="340"/>
+      <p2 x="360" y="360"/>
+    </wire>
+    <wire>
+      <p1 x="1000" y="40"/>
+      <p2 x="1000" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="1000" y="340"/>
+      <p2 x="1000" y="500"/>
+    </wire>
+    <wire>
+      <p1 x="620" y="160"/>
+      <p2 x="620" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="620" y="340"/>
+      <p2 x="620" y="380"/>
+    </wire>
+    <wire>
+      <p1 x="940" y="100"/>
+      <p2 x="940" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="940" y="340"/>
+      <p2 x="940" y="440"/>
+    </wire>
+    <wire>
+      <p1 x="880" y="140"/>
+      <p2 x="880" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="880" y="340"/>
+      <p2 x="880" y="400"/>
+    </wire>
+    <wire>
+      <p1 x="1200" y="80"/>
+      <p2 x="1200" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="1200" y="340"/>
+      <p2 x="1200" y="460"/>
+    </wire>
+    <wire>
+      <p1 x="500" y="60"/>
+      <p2 x="500" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="500" y="340"/>
+      <p2 x="500" y="480"/>
+    </wire>
+    <wire>
+      <p1 x="1140" y="120"/>
+      <p2 x="1140" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="1140" y="340"/>
+      <p2 x="1140" y="420"/>
+    </wire>
+    <wire>
+      <p1 x="760" y="40"/>
+      <p2 x="760" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="760" y="340"/>
+      <p2 x="760" y="500"/>
+    </wire>
+    <wire>
+      <p1 x="1080" y="180"/>
+      <p2 x="1080" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="1080" y="340"/>
+      <p2 x="1080" y="360"/>
+    </wire>
+    <wire>
+      <p1 x="700" y="100"/>
+      <p2 x="700" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="700" y="340"/>
+      <p2 x="700" y="440"/>
+    </wire>
+    <wire>
+      <p1 x="380" y="160"/>
+      <p2 x="380" y="200"/>
+    </wire>
+    <wire>
+      <p1 x="380" y="340"/>
+      <p2 x="380" y="380"/>
+    </wire>
+  </wires>
+  <measurementOrdering/>
+</circuit>
